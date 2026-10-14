@@ -44,7 +44,9 @@ class SharedModels:
 
         t = time.perf_counter()
         FaceStack.get()
-        self.video = VideoDeepfakeDetector(s.video_backbone, s.video_frames_per_window)
+        # the SwinV2 detector costs ~0.5 s/crop on CPU int8 -> one crop per window on the CPU profile
+        k = 1 if (s.video_backbone == "aiimg" and s.profile == "cpu") else s.video_frames_per_window
+        self.video = VideoDeepfakeDetector(s.video_backbone, k)
         self.audio = VoiceSpoofDetector(s.audio_model)
         self.avsync = AVSyncDetector(max_stacks=8 if s.profile == "cpu" else 32)
         log.info("shared models ready in %.1fs", time.perf_counter() - t)

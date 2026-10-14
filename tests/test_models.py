@@ -8,6 +8,7 @@ import torch
 
 from tests.conftest import requires_models
 from trusthire.common.types import Modality, Window
+from trusthire.video.aiimg import onnx_paths
 
 
 def _window(frames, audio, i0: int, idx: int = 0) -> Window:
@@ -158,3 +159,18 @@ def test_identity_detects_person_change(example_clip):
     mon2 = IdentityMonitor(Enrollment(face=other / np.linalg.norm(other)))
     diff = mon2.face(_window(frames, audio, 30))
     assert diff.score > 0.8
+
+
+@pytest.mark.skipif(
+    not onnx_paths()[1].exists(),
+    reason="AI-image detector not exported (run trusthire.video.aiimg.export)",
+)
+def test_aiimg_detector_real_clip_scores_real(example_clip):
+    from trusthire.common.face import FaceStack, square_crop
+    from trusthire.video.aiimg import AIImageDetector
+
+    frames, _, _ = example_clip
+    fs = FaceStack.get()
+    crops = [square_crop(f, fs.detector.detect(f)[0], 1.3, 256) for f in (frames[0], frames[150])]
+    p = AIImageDetector(quantized=True).p_fake(crops)
+    assert p.shape == (2,) and (p < 0.5).all()  # genuine broadcast footage

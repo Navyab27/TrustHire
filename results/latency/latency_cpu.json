@@ -6,20 +6,22 @@
   "window_s": 3.0,
   "hop_s": 1.5,
   "n_windows": 12,
-  "total_ms_p50": 1689.0791500918567,
-  "total_ms_p95": 2969.905580068007,
-  "real_time_factor": 1.1260527667279046,
+  "total_ms_p50": 1119.2242001416162,
+  "total_ms_p95": 2123.8733698846772,
+  "real_time_factor": 0.7461494667610774,
   "modules_ms_p50": {
-    "video_deepfake": 1467.008300125599,
-    "voice_spoof": 1169.7392000351101,
-    "face_identity": 310.98055001348257,
-    "behavior": 370.98420003894717,
-    "av_sync": 1382.7379000140354,
-    "voice_identity": 2203.1649000709876,
-    "objects": 240.51829997915775
+    "video_deepfake": 588.3518500486389,
+    "voice_spoof": 719.7942000348121,
+    "behavior": 281.997749931179,
+    "av_sync": 997.2568498924375,
+    "face_identity": 376.375799998641,
+    "voice_identity": 1512.5545499613509,
+    "objects": 84.7766000078991
   },
-  "peak_rss_mb": 2084.5,
+  "peak_rss_mb": 2456.4,
   "gpu_mem_mb": null,
-  "models": {"video": "effnb4", "audio": "spectra0_int8"},
-  "source": "python -m trusthire.evaluation.latency --windows 16, 2026-10-12 ~17:05 IST, mains power; values copied verbatim from the run's printed output after the file was overwritten by a 4-window debug run. Re-measure: python -m trusthire.evaluation.latency"
+  "models": {
+    "video": "aiimg",
+    "audio": "spectra0_int8"
+  }
 }

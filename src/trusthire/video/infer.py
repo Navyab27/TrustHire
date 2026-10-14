@@ -64,12 +64,19 @@ def pick_face(faces: list[Face]) -> Face | None:
 class VideoDeepfakeDetector:
     def __init__(self, backbone: str = "effnb4", frames_per_window: int = 5, temporal: str | None = None):
         self.backbone = backbone
-        self.size = INPUT_SIZE.get(backbone, 224)
         self.k = frames_per_window
-        self.sess = make_session(ensure_onnx(backbone))
         self._lock = threading.Lock()
         self.temporal: torch.nn.Module | None = None
         self.temporal_kind = "topk-mean"
+        self.aiimg = None
+        if backbone == "aiimg":  # SwinV2-L AI-generated-image detector (see video/aiimg.py)
+            from trusthire.video.aiimg import SIZE, AIImageDetector
+
+            self.aiimg = AIImageDetector()
+            self.size = SIZE
+            return
+        self.size = INPUT_SIZE.get(backbone, 224)
+        self.sess = make_session(ensure_onnx(backbone))
         head_path = models_dir() / "video" / f"temporal_{temporal or 'transformer'}_{backbone}.pt"
         if head_path.exists():
             ck = torch.load(head_path, map_location="cpu", weights_only=False)
@@ -78,7 +85,9 @@ class VideoDeepfakeDetector:
             self.temporal.eval()
             self.temporal_kind = ck["kind"]
 
-    def frame_scores(self, crops: list[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
+    def frame_scores(self, crops: list[np.ndarray]) -> tuple[np.ndarray, np.ndarray | None]:
+        if self.aiimg is not None:
+            return self.aiimg.p_fake(crops), None
         x = preprocess(crops, self.size)
         with self._lock:
             logits, emb = self.sess.run(None, {"image": x})
@@ -90,7 +99,9 @@ class VideoDeepfakeDetector:
         t0 = time.perf_counter()
         if not w.frames:
             return missing(Modality.VIDEO, w.t_start, w.t_end, "no video")
-        idxs = anchor_indices(len(w.frames), self.k)
+        anchors = anchor_indices(len(w.frames))
+        # one crop -> the window's middle anchor; otherwise k evenly spaced (subset of the shared anchors)
+        idxs = [anchors[len(anchors) // 2]] if self.k == 1 else anchor_indices(len(w.frames), self.k)
         crops, sizes, used = [], [], []
         for i in idxs:
             f = pick_face(detect_cached(w.cache, int(i), w.frames[i]))
@@ -102,7 +113,7 @@ class VideoDeepfakeDetector:
         if not crops:
             return missing(Modality.VIDEO, w.t_start, w.t_end, "no face")
         probs, emb = self.frame_scores(crops)
-        if self.temporal is not None:
+        if self.temporal is not None and emb is not None:
             with torch.inference_mode():
                 score = float(torch.sigmoid(self.temporal(torch.from_numpy(emb)[None])).item())
         else:

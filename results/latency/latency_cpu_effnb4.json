@@ -1,0 +1,25 @@
+{
+  "profile": "cpu",
+  "cpu": "Intel64 Family 6 Model 154 Stepping 4, GenuineIntel",
+  "logical_cpus": 12,
+  "on_battery": false,
+  "window_s": 3.0,
+  "hop_s": 1.5,
+  "n_windows": 12,
+  "total_ms_p50": 1689.0791500918567,
+  "total_ms_p95": 2969.905580068007,
+  "real_time_factor": 1.1260527667279046,
+  "modules_ms_p50": {
+    "video_deepfake": 1467.008300125599,
+    "voice_spoof": 1169.7392000351101,
+    "face_identity": 310.98055001348257,
+    "behavior": 370.98420003894717,
+    "av_sync": 1382.7379000140354,
+    "voice_identity": 2203.1649000709876,
+    "objects": 240.51829997915775
+  },
+  "peak_rss_mb": 2084.5,
+  "gpu_mem_mb": null,
+  "models": {"video": "effnb4", "audio": "spectra0_int8"},
+  "source": "python -m trusthire.evaluation.latency --windows 16, 2026-10-12 ~17:05 IST, mains power; values copied verbatim from the run's printed output after the file was overwritten by a 4-window debug run. Re-measure: python -m trusthire.evaluation.latency"
+}

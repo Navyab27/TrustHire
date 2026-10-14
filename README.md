@@ -42,6 +42,7 @@ summaries; without a key the report uses a deterministic template; `ollama` uses
 | Face verification, LFW 1000 pairs (end-to-end SCRFD→ArcFace) | AUC 0.986, EER 3.0 %, 0 % impostors accepted at the deployed threshold |
 | AV sync on the SyncNet reference clip | offset 3 / conf 9.8 (reference 3 / 10.0); injected ±k-frame shifts recovered exactly |
 | Live latency, laptop CPU (i5-1235U, no GPU) | **1.69 s** p50 per 3 s window (hop 1.5 s) |
+| **Team's recorded videos (18, pilot)** — learned fusion, grouped CV | session AUC 0.688 → **0.935**, EER 46.8 % → 14.3 %; AI-video detector AUC 0.000 → **1.000** ([details](docs/CUSTOM_RESULTS.md)) |
 
 Pending because they need data you must request: video deepfake benchmarks (FF++, Celeb-DF, DFDC, LAV-DF,
 DeepSpeak) and the **custom interview test set** ablations — see below.

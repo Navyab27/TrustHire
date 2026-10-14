@@ -27,7 +27,8 @@ class Settings(BaseSettings):
     analysis_fps: float = 25.0  # SyncNet needs 25 fps
 
     # per-module model choices (overridable)
-    video_backbone: Literal["effnb4", "xception"] = "effnb4"
+    # aiimg = SwinV2-L AI-generated-image detector: AUC 1.000 vs 0.000 for effnb4 on the custom recordings
+    video_backbone: Literal["aiimg", "effnb4", "xception"] = "aiimg"
     video_frames_per_window: int = 3  # subset of the 5 shared face anchors (gpu profile: 8)
     audio_model: Literal[
         "aasist", "aasist_l", "spectra0", "spectra0_int8", "spectra0_ft", "spectra0_ft_int8"
@@ -46,9 +47,9 @@ class Settings(BaseSettings):
     # timeline with contiguous 3 s windows (0, 2, 4, ...), so no evidence is lost — only redundant overlap.
     # Heavy modules are staggered across even/odd windows to balance CPU load. GPU profile: all (1, 0).
     module_schedule: dict[str, tuple[int, int]] = {
-        "video_deepfake": (1, 0),
+        "video_deepfake": (2, 0),  # SwinV2 detector is ~0.5 s/crop on CPU int8
         "voice_spoof": (2, 0),
-        "face_identity": (2, 0),
+        "face_identity": (2, 1),
         "behavior": (1, 0),
         "av_sync": (2, 1),
         "voice_identity": (2, 1),
@@ -56,7 +57,9 @@ class Settings(BaseSettings):
     }
 
     # fusion
-    fusion_method: Literal["weighted", "gbm", "attention"] = "weighted"
+    # gbm = LightGBM trained on the custom recordings (all modules except transcript); falls back to the
+    # documented prior (weighted) when models/fusion/gbm.pkl is absent
+    fusion_method: Literal["weighted", "gbm", "attention"] = "gbm"
 
     # LLM summary
     llm_provider: Literal["anthropic", "ollama", "none"] = "anthropic"

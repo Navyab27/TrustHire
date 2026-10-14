@@ -37,6 +37,8 @@ def gradcam(crop_bgr: np.ndarray, backbone: str = "effnb4") -> tuple[np.ndarray,
     from pytorch_grad_cam import GradCAM
     from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 
+    if backbone == "aiimg":
+        return _gradcam_swin(crop_bgr)
     with _lock:
         if backbone not in _models:
             _models[backbone] = build_frame_model(backbone, ensure(f"video.{backbone}"))
@@ -49,6 +51,50 @@ def gradcam(crop_bgr: np.ndarray, backbone: str = "effnb4") -> tuple[np.ndarray,
     with GradCAM(model=wrapped, target_layers=[model.gradcam_layer]) as cam:
         heat = cam(input_tensor=x, targets=[ClassifierOutputTarget(1)])[0]
     img = cv2.resize(crop_bgr, (size, size))
+    color = cv2.applyColorMap((heat * 255).astype(np.uint8), cv2.COLORMAP_JET)
+    return cv2.addWeighted(img, 0.55, color, 0.45, 0), p_fake
+
+
+def _gradcam_swin(crop_bgr: np.ndarray) -> tuple[np.ndarray, float]:
+    """Grad-CAM for the SwinV2 AI-image detector: last stage's tokens reshaped to an 8x8 map."""
+    from pytorch_grad_cam import GradCAM
+    from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
+    from transformers import AutoModelForImageClassification
+
+    from trusthire.common.registry import models_dir
+    from trusthire.video.aiimg import FAKE_INDEX, REPO, SIZE
+    from trusthire.video.aiimg import preprocess as aipre
+
+    with _lock:
+        if "aiimg" not in _models:
+            m = AutoModelForImageClassification.from_pretrained(
+                REPO, cache_dir=str(models_dir() / "hf")
+            ).eval()
+
+            class _Logits(nn.Module):
+                def __init__(self) -> None:
+                    super().__init__()
+                    self.m = m
+
+                def forward(self, x: torch.Tensor) -> torch.Tensor:
+                    return self.m(pixel_values=x).logits  # type: ignore[no-any-return]
+
+            _models["aiimg"] = _Logits().eval()
+        model = _models["aiimg"]
+    x = torch.from_numpy(aipre([crop_bgr]))
+    with torch.no_grad():
+        p_fake = float(torch.softmax(model(x), -1)[0, FAKE_INDEX])
+    # end of stage 3 (16x16 tokens): class-discriminative and finer than the 8x8 last stage; the last
+    # block's post-norm output gave an all-zero map (checked against GradCAM++/EigenCAM)
+    layer = model.m.swinv2.encoder.layers[-2].blocks[-1].layernorm_after  # type: ignore[union-attr,index]
+
+    def reshape(t: torch.Tensor) -> torch.Tensor:  # (B, HW, C) -> (B, C, H, W)
+        side = round(t.shape[1] ** 0.5)
+        return t.reshape(t.shape[0], side, side, t.shape[2]).permute(0, 3, 1, 2)
+
+    with GradCAM(model=model, target_layers=[layer], reshape_transform=reshape) as cam:
+        heat = cam(input_tensor=x, targets=[ClassifierOutputTarget(FAKE_INDEX)])[0]
+    img = cv2.resize(crop_bgr, (SIZE, SIZE))
     color = cv2.applyColorMap((heat * 255).astype(np.uint8), cv2.COLORMAP_JET)
     return cv2.addWeighted(img, 0.55, color, 0.45, 0), p_fake
 

@@ -1,11 +1,11 @@
 | Module | p50 ms (runs concurrently) |
 |---|---|
-| objects | 10166 |
-| voice_identity | 6183 |
-| av_sync | 1584 |
-| voice_spoof | 1191 |
-| video_deepfake | 1078 |
-| behavior | 493 |
-| face_identity | 251 |
-| **window total (wall)** | **1576** (p95 9522) |
+| voice_identity | 1513 |
+| av_sync | 997 |
+| voice_spoof | 720 |
+| video_deepfake | 588 |
+| face_identity | 376 |
+| behavior | 282 |
+| objects | 85 |
+| **window total (wall)** | **1119** (p95 2124) |
 | hop budget | 1500 |

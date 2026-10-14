@@ -60,6 +60,7 @@ def ablation_configs() -> dict[str, tuple[str, ...]]:
     for a, b in itertools.combinations(["video", "audio", "behavior"], 2):
         cfgs[f"{a}+{b}"] = g[a] + g[b]
     cfgs["video+audio+avsync"] = g["video"] + g["audio"] + g["avsync"]
+    cfgs["all-but-transcript"] = tuple(m for m in MODS if m not in g["transcript"])
     cfgs["full"] = MODS
     return cfgs
 
@@ -333,16 +334,19 @@ def _tables(res: dict[str, Any], out: Path) -> None:
         (out / "fairness.md").write_text("\n".join(fl) + "\n", encoding="utf-8")
 
 
-def train_final(df: pd.DataFrame) -> None:
+def train_final(df: pd.DataFrame, mods: tuple[str, ...] = MODS, methods: list[str] | None = None) -> None:
     if df["synthetic"].any():
         raise SystemExit("refusing to ship fusion models trained on synthetic data")
     groups = df.participant_id.to_numpy()
     rng = np.random.default_rng(0)
     ug = np.unique(groups)
     cal = np.isin(groups, rng.choice(ug, max(1, len(ug) // 5), replace=False))
-    for method in FUSERS:
-        f = CalibratedFuser(build_fuser(method), Calibrator("isotonic" if method == "gbm" else "temperature"))
-        f.fit(df[~cal], df.label[~cal].to_numpy(), df[cal], df.label[cal].to_numpy())
+    data = mask_modalities(df, mods)
+    for method in methods or FUSERS:
+        f = CalibratedFuser(
+            build_fuser(method, mods), Calibrator("isotonic" if method == "gbm" else "temperature")
+        )
+        f.fit(data[~cal], df.label[~cal].to_numpy(), data[cal], df.label[cal].to_numpy())
         f.save(models_dir() / "fusion" / f"{method}.pkl")
         log.info("saved fusion/%s.pkl", method)
 
@@ -354,6 +358,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--synthetic", action="store_true")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--fusers", nargs="*", default=None)
+    ap.add_argument(
+        "--mods", default="full", help="ablation config name used by train-final (e.g. all-but-transcript)"
+    )
     a = ap.parse_args(argv)
     if a.cmd == "template":
         print("template written to", write_template())
@@ -376,7 +383,7 @@ def main(argv: list[str] | None = None) -> int:
     if a.cmd == "evaluate":
         evaluate(df, REPO_ROOT / "results" / "custom", synthetic=False, fusers=a.fusers)
     elif a.cmd == "train-final":
-        train_final(df)
+        train_final(df, ablation_configs()[a.mods], a.fusers)
     return 0
 
 

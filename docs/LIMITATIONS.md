@@ -4,7 +4,12 @@ Grounded in what we measured (see `results/`) and in what we could not measure.
 
 ## Evidence gaps
 
-1. **Video deepfake numbers are pending.** FF++, Celeb-DF, DFDC, LAV-DF and DeepSpeak require access approval;
+0. **Custom-set results are a pilot** (18 videos, one real participant) — see `docs/CUSTOM_RESULTS.md`. Scripted
+   reading is not detected (20 % of windows at 5 % FPR); the learned fusion is trained on this small set.
+
+1. **Video: the FF++ EfficientNet-B4 was inverted on our webcam data** (AUC 0.000) and was replaced by a SwinV2
+   AI-image detector (AUC 1.000 on our 18 videos). Public face-swap benchmarks (FF++, Celeb-DF) are still pending.
+   *Previously:* **Video deepfake numbers are pending.** FF++, Celeb-DF, DFDC, LAV-DF and DeepSpeak require access approval;
    the shipped EfficientNet-B4 / Xception weights are DeepfakeBench's FF++ models whose published cross-dataset
    AUC on Celeb-DF is only ~0.7–0.75. Real-time face-swap tools (DeepFaceLive) produce artefacts that differ
    from FF++; expect domain shift until the detector is fine-tuned on interview-like data (DeepSpeak, own set).

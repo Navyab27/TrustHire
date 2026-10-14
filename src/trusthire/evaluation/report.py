@@ -76,6 +76,13 @@ def audio_section() -> str:
 
 def video_section() -> str:
     t = _md(RES / "video" / "benchmark.md")
+    custom = _md(RES / "video" / "pretrained_on_custom.md")
+    if custom:
+        intro = (
+            "**Detector selection on the custom recordings** (AI-generated vs real-camera video; the deployed "
+            "detector is the int8 ONNX export of the top row):\n\n"
+        )
+        t = (t + "\n\n" if t else "") + intro + custom
     return t or _pending(
         "FF++ / Celeb-DF / DFDC video benchmark (datasets need access approval, see docs/DATASETS.md)",
         "python -m trusthire.video.eval --crops <crops.csv> --test-datasets ffpp celebdf",
