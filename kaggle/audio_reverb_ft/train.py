@@ -154,13 +154,12 @@ def load_released() -> nn.Module:
 
 @torch.inference_mode()
 def p_spoof(model: nn.Module, wavs: np.ndarray) -> np.ndarray:
-    model.eval()
+    """Evaluation runs in fp32: the fine-tuned model overflowed fp16 (all-NaN outputs) in a previous run."""
+    model.eval().float()
     out = []
-    for i in range(0, len(wavs), 16):
-        x = torch.from_numpy(np.stack([preemph(w) for w in wavs[i:i + 16]])).to(DEV)
-        with torch.autocast("cuda", dtype=torch.float16):
-            logits = model(x).float()
-        out.append(torch.softmax(logits, -1)[:, 0].cpu().numpy())
+    for i in range(0, len(wavs), 8):
+        x = torch.from_numpy(np.stack([preemph(w) for w in wavs[i:i + 8]])).to(DEV)
+        out.append(torch.softmax(model(x).float(), -1)[:, 0].cpu().numpy())
     return np.concatenate(out)
 
 
@@ -181,7 +180,12 @@ def evaluate(model: nn.Module, tag: str) -> dict:
     res = {}
     for c in EVAL_CONDS:
         s = p_spoof(model, eval_x[c])
+        n_nan = int(np.isnan(s).sum())
+        if n_nan:
+            print(f"[{tag}] {c}: {n_nan} NaN scores -> treated as P(spoof)=0.5", flush=True)
+            s = np.nan_to_num(s, nan=0.5)
         r = report(y, s, bootstrap=300).as_dict()
+        r["nan_scores"] = n_nan
         b = s[y == 0]
         r["genuine_flagged_at_0.5"] = float((b >= 0.5).mean())
         res[c] = r
@@ -230,13 +234,12 @@ try:
                 log.append({"step": step, "epoch": ep, "loss": float(loss.detach()), "min": (time.time() - t0) / 60})
                 print(f"step {step}/{total} loss {float(loss.detach()):.4f} {(time.time() - t0) / 60:.1f} min", flush=True)
         pd.DataFrame(log).to_csv(WORK / "train_log.csv", index=False)
-        torch.save(model.state_dict(), TMP / f"ft_ep{ep}.pt")
+        torch.save(model.state_dict(), WORK / "ft_last.pt")  # persistent output: survives a later failure
 except RuntimeError as e:  # e.g. a crashed DataLoader worker: keep the last completed checkpoint
     print("TRAINING INTERRUPTED:", e, flush=True)
     results["training_interrupted"] = str(e)[:300]
-    ckpts = sorted(TMP.glob("ft_ep*.pt"))
-    if ckpts:
-        model.load_state_dict(torch.load(ckpts[-1], map_location=DEV))
+    if (WORK / "ft_last.pt").exists():
+        model.load_state_dict(torch.load(WORK / "ft_last.pt", map_location=DEV))
 
 results["finetuned"] = evaluate(model, "finetuned")
 results["config"] = {"epochs": EPOCHS, "batch": BATCH, "lr": LR, "train": "ASVspoof2019 LA train + reverb/noise/codec aug",
@@ -251,4 +254,5 @@ dummy = torch.randn(1, NB, device=DEV) * 0.05
 torch.onnx.export(model, (dummy,), str(WORK / "spectra0_ft.onnx"), input_names=["wav"], output_names=["logits"],
                   dynamic_axes={"wav": {0: "batch"}, "logits": {0: "batch"}}, opset_version=17, dynamo=False)
 (WORK / "results.json").write_text(json.dumps(results, indent=2))
+(WORK / "ft_last.pt").unlink(missing_ok=True)
 print("DONE", json.dumps({c: {k: results[k][c]["eer"] for k in ("released", "finetuned")} for c in EVAL_CONDS}), flush=True)
