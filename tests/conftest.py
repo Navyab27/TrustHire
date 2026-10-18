@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import os
+import sys
 
 import numpy as np
 import pytest
 
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
 os.environ.setdefault("TRUSTHIRE_SKIP_WARMUP", "1")
+if sys.platform == "darwin":
+    os.environ.setdefault("OMP_NUM_THREADS", "1")
 
 
 def _have(rel: str) -> bool:

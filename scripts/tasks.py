@@ -26,6 +26,7 @@ ENV = {
     "UV_SYSTEM_CERTS": "1",
     "HF_HUB_DISABLE_SYMLINKS_WARNING": "1",
     "PYTHONIOENCODING": "utf-8",
+    "OMP_NUM_THREADS": os.environ.get("OMP_NUM_THREADS", "1" if sys.platform == "darwin" else "4"),
 }
 
 

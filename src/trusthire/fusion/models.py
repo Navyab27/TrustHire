@@ -7,6 +7,7 @@ wrapped by a post-hoc calibrator (temperature scaling or isotonic regression).
 from __future__ import annotations
 
 import pickle
+import sys
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -173,7 +174,7 @@ class GBMStacker:
                 subsample_freq=1,
                 colsample_bytree=0.8,
                 min_child_samples=10,
-                n_jobs=4,
+                n_jobs=1 if sys.platform == "darwin" else 4,
                 scale_pos_weight=spw,
                 random_state=self.seed,
                 verbose=-1,
