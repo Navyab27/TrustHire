@@ -1,0 +1,189 @@
+{
+  "detector": {
+    "effnb4 (current)|crop": {
+      "auc": 0.0,
+      "mean_real": 0.4455861250559489,
+      "mean_ai": 0.06215226432929436,
+      "ms_per_image": 123.14960763776779
+    },
+    "effnb4 (current)|full": {
+      "auc": 0.7083333333333334,
+      "mean_real": 0.30970929687221843,
+      "mean_ai": 0.4733412464459737,
+      "ms_per_image": 131.8429604127434
+    },
+    "xception|crop": {
+      "auc": 0.1388888888888889,
+      "mean_real": 0.45059847210844356,
+      "mean_ai": 0.21214932513733706,
+      "ms_per_image": 194.37008541232595
+    },
+    "xception|full": {
+      "auc": 0.2638888888888889,
+      "mean_real": 0.3886975844701131,
+      "mean_ai": 0.32435236126184464,
+      "ms_per_image": 194.03791805477036
+    },
+    "haywoodsloan/ai-image-detector-deploy|crop": {
+      "auc": 1.0,
+      "mean_real": 0.0028617329662665725,
+      "mean_ai": 0.9893464545408884,
+      "ms_per_image": 2376.9515374959965
+    },
+    "haywoodsloan/ai-image-detector-deploy|full": {
+      "auc": 1.0,
+      "mean_real": 0.010590337255659202,
+      "mean_ai": 0.9957630733648936,
+      "ms_per_image": 2332.995838196237
+    },
+    "Ateeqq/ai-vs-human-image-detector|crop": {
+      "auc": 0.8888888888888888,
+      "mean_real": 0.999151940147082,
+      "mean_ai": 0.999874214331309,
+      "ms_per_image": 404.7242986093301
+    },
+    "Ateeqq/ai-vs-human-image-detector|full": {
+      "auc": 0.875,
+      "mean_real": 0.9999478111664454,
+      "mean_ai": 0.9999873836835226,
+      "ms_per_image": 403.53583541905715
+    },
+    "prithivMLmods/Deep-Fake-Detector-v2-Model|crop": {
+      "auc": 0.8333333333333333,
+      "mean_real": 0.4306681876381238,
+      "mean_ai": 0.59855188926061,
+      "ms_per_image": 504.85689097291066
+    },
+    "prithivMLmods/Deep-Fake-Detector-v2-Model|full": {
+      "auc": 0.09722222222222222,
+      "mean_real": 0.8667542189359665,
+      "mean_ai": 0.81566654642423,
+      "ms_per_image": 530.6557763930565
+    },
+    "dima806/deepfake_vs_real_image_detection|crop": {
+      "auc": 0.041666666666666685,
+      "mean_real": 0.9477356572945913,
+      "mean_ai": 0.5845853810509046,
+      "ms_per_image": 517.1009506965573
+    },
+    "dima806/deepfake_vs_real_image_detection|full": {
+      "auc": 0.25,
+      "mean_real": 0.07911678140711349,
+      "mean_ai": 0.001283741876250133,
+      "ms_per_image": 511.42518611676576
+    },
+    "umm-maybe/AI-image-detector|crop": {
+      "auc": 0.736111111111111,
+      "mean_real": 0.26595673834284145,
+      "mean_ai": 0.4165467793742816,
+      "ms_per_image": 589.3855284763655
+    },
+    "umm-maybe/AI-image-detector|full": {
+      "auc": 0.861111111111111,
+      "mean_real": 0.14852092353006205,
+      "mean_ai": 0.2674930642048518,
+      "ms_per_image": 477.355629162048
+    },
+    "prithivMLmods/AI-vs-Deepfake-vs-Real-Siglip2|crop": {
+      "auc": 0.6111111111111112,
+      "mean_real": 0.036495030579165665,
+      "mean_ai": 0.16257423749387576,
+      "ms_per_image": 389.21803263009576
+    },
+    "prithivMLmods/AI-vs-Deepfake-vs-Real-Siglip2|full": {
+      "auc": 0.9444444444444444,
+      "mean_real": 0.6827519138654073,
+      "mean_ai": 0.9999571343262991,
+      "ms_per_image": 433.16096111084335
+    }
+  },
+  "fusion": [
+    {
+      "variant": "Hand-set fusion, FF++ video model",
+      "win_auc": 0.705145592341444,
+      "win_eer": 0.3669724770642202,
+      "sess_auc": 0.7142857142857143,
+      "sess_eer": 0.4675324675324675
+    },
+    {
+      "variant": "Hand-set fusion, SwinV2 video model",
+      "win_auc": 0.7280414838452335,
+      "win_eer": 0.3325289190267252,
+      "sess_auc": 0.7402597402597402,
+      "sess_eer": 0.538961038961039
+    },
+    {
+      "variant": "Learned fusion (LightGBM), SwinV2",
+      "win_auc": 0.8299162345432787,
+      "win_eer": 0.2410051854806542,
+      "sess_auc": 0.9090909090909091,
+      "sess_eer": 0.18181818181818177
+    }
+  ],
+  "learned_seeds": {
+    "mean": {
+      "win_auc": 0.835372955723973,
+      "win_eer": 0.22804946150777822,
+      "sess_auc": 0.9376623376623374,
+      "sess_eer": 0.16103896103896104
+    },
+    "std": {
+      "win_auc": 0.020729672520155062,
+      "win_eer": 0.06122075500276667,
+      "sess_auc": 0.019262853213235464,
+      "sess_eer": 0.05705424061425658
+    },
+    "per_seed": [
+      {
+        "win_auc": 0.8299162345432787,
+        "win_eer": 0.2410051854806542,
+        "sess_auc": 0.9090909090909091,
+        "sess_eer": 0.18181818181818177
+      },
+      {
+        "win_auc": 0.8158356601515755,
+        "win_eer": 0.24770642201834858,
+        "sess_auc": 0.935064935064935,
+        "sess_eer": 0.18181818181818177
+      },
+      {
+        "win_auc": 0.8243318707618668,
+        "win_eer": 0.21202632628639806,
+        "sess_auc": 0.948051948051948,
+        "sess_eer": 0.23376623376623373
+      },
+      {
+        "win_auc": 0.8370163542082171,
+        "win_eer": 0.3035500598324691,
+        "sess_auc": 0.9610389610389609,
+        "sess_eer": 0.09090909090909094
+      },
+      {
+        "win_auc": 0.8697646589549263,
+        "win_eer": 0.13595931392102115,
+        "sess_auc": 0.9350649350649349,
+        "sess_eer": 0.1168831168831169
+      }
+    ]
+  },
+  "per_attack_shipped": {
+    "mean": {
+      "face_and_voice": 0.8421052631578949,
+      "lip_sync": 0.7037037037037037,
+      "scripted_reading": 0.1,
+      "genuine_fpr": 0.0391304347826087
+    },
+    "std": {
+      "face_and_voice": 0.20468880508031642,
+      "lip_sync": 0.25793311624415033,
+      "scripted_reading": 0.054734520812692256,
+      "genuine_fpr": 0.010196555999616152
+    },
+    "n_windows": {
+      "face_and_voice": 39,
+      "genuine": 228,
+      "lip_sync": 28,
+      "scripted_reading": 44
+    }
+  }
+}

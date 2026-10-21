@@ -11,7 +11,7 @@ ever tested on a copy of a video it was trained on. **Small, single-participant 
 | Change | Evidence |
 |---|---|
 | Video detector EfficientNet-B4 (FF++, 2019) → **SwinV2-L AI-image detector** (int8 ONNX) | on these videos: AUC 0.000 (inverted) → **1.000**; real clips P(fake) ≤ 0.008, AI clips ≥ 0.966 (`results/video/pretrained_on_custom.md`) |
-| Hand-set fusion → **LightGBM fusion learned on these videos** (all modules except transcript) | session AUC 0.688 → **0.935**, EER 46.8 % → **14.3 %** (grouped CV, `results/custom/results.json`) |
+| Hand-set fusion → **LightGBM fusion learned on these videos** (all modules except transcript) | session AUC 0.714 → **0.938 ± 0.019**, EER 46.8 % → **16.1 ± 5.7 %** (grouped CV, temperature calibration, mean ± SD over 5 seeds; `paper/figures/stats.json`) |
 
 Per-video trust (0–100) with the hand-set fusion — old video detector vs new detector:
 
@@ -19,11 +19,15 @@ Per-video trust (0–100) with the hand-set fusion — old video detector vs new
 |---|---|---|
 | genuine (7 incl. re-encoded) | 65–94 | **94.8–98.7** |
 | AI-generated (6) | 1–9 | **0.0–2.1** |
-| audio mismatch (2) | 90.9 / 35.8 | 97.6 / 51.4 → learned fusion: caught (93 % of windows at 5 % FPR) |
+| audio mismatch (2) | 90.9 / 35.8 | 97.6 / 51.4 → learned fusion: caught (70 % of windows at 5 % FPR) |
 | scripted reading (3) | 82–95 | 97.5–98.2 → **still missed** |
 
-Learned fusion, cross-validated, at the threshold giving 5 % false alarms on genuine windows: AI-generated
-windows caught 92 %, audio-mismatch 93 %, scripted reading 20 %; genuine windows flagged 0.9 %.
+Learned fusion, cross-validated, at the threshold giving 5 % false alarms on genuine windows (mean of 5 seeds):
+AI-generated windows caught 84 %, audio-mismatch 70 %, scripted reading 10 %; genuine windows flagged 3.9 %.
+
+Note: an earlier single-seed run with isotonic calibration reported session AUC 0.935 / EER 14.3 %. Repeating
+it over 5 seeds gave 0.886 ± 0.083 because isotonic regression on 3–4 calibration videos creates score ties;
+temperature scaling (now the default) keeps the ranking and gives the numbers above.
 
 ## What did not work (also measured)
 

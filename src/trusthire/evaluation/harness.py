@@ -144,7 +144,9 @@ def extract(root: Path | None = None, force: bool = False) -> pd.DataFrame:
 
 
 # ----------------------------------------------------------------------------- evaluation
-def _cv_predict(df: pd.DataFrame, method: str, mods: tuple[str, ...], seed: int = 0) -> np.ndarray:
+def _cv_predict(
+    df: pd.DataFrame, method: str, mods: tuple[str, ...], seed: int = 0, cal_method: str | None = None
+) -> np.ndarray:
     groups = df["participant_id"].to_numpy()
     n_groups = len(np.unique(groups))
     k = min(5, n_groups)
@@ -159,8 +161,8 @@ def _cv_predict(df: pd.DataFrame, method: str, mods: tuple[str, ...], seed: int 
         y_fit, y_cal = d_fit.label.to_numpy(), d_cal.label.to_numpy()
         if len(np.unique(y_fit)) < 2:
             continue
-        cal_method = "isotonic" if method == "gbm" else "temperature"
-        f = CalibratedFuser(build_fuser(method, MODS, seed), Calibrator(cal_method))
+        cm = cal_method or "temperature"  # isotonic on ~3 calibration videos creates ties and hurts ranking
+        f = CalibratedFuser(build_fuser(method, MODS, seed), Calibrator(cm))
         f.fit(d_fit, y_fit, d_cal, y_cal)
         oof[te] = f.predict_proba(data.iloc[te])
     return oof
@@ -344,7 +346,7 @@ def train_final(df: pd.DataFrame, mods: tuple[str, ...] = MODS, methods: list[st
     data = mask_modalities(df, mods)
     for method in methods or FUSERS:
         f = CalibratedFuser(
-            build_fuser(method, mods), Calibrator("isotonic" if method == "gbm" else "temperature")
+            build_fuser(method, mods), Calibrator("temperature")  # rank-preserving; isotonic tied scores (see paper)
         )
         f.fit(data[~cal], df.label[~cal].to_numpy(), data[cal], df.label[cal].to_numpy())
         f.save(models_dir() / "fusion" / f"{method}.pkl")
