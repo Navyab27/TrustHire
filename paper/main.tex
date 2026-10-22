@@ -108,15 +108,16 @@ folds silently destroyed ranking performance;
 \textit{Face forgery detection.} Frame-level CNNs such as XceptionNet~\cite{chollet2017xception} and
 EfficientNet~\cite{tan2019efficientnet} trained on FaceForensics++~\cite{rossler2019ffpp} remain standard
 baselines. DeepfakeBench~\cite{yan2023deepfakebench} compared many detectors under a common protocol and
-reported large drops on unseen datasets such as Celeb-DF~\cite{li2020celebdf} and DFDC~\cite{dolhansky2020dfdc}.
+found that accuracy falls sharply once a model trained on one corpus is tested on another, for instance
+Celeb-DF~\cite{li2020celebdf} or DFDC~\cite{dolhansky2020dfdc}.
 Detectors trained on many generative models, for example linear probes over CLIP features~\cite{ojha2023universal},
 generalise better to fully synthetic images, which is closer to the avatars produced by current text-to-video
 tools.
 
 \textit{Voice anti-spoofing.} AASIST~\cite{jung2022aasist} and RawNet2~\cite{tak2021rawnet2} operate on raw
 waveforms and perform very well on ASVspoof 2019 LA~\cite{wang2020asvspoof}. M\"uller et al.~\cite{muller2022itw}
-showed that such models break down on In-the-Wild recordings of public figures. Front-ends based on
-self-supervised speech models such as XLS-R~\cite{babu2022xlsr} narrow this gap; the Spectra-0
+showed that such models break down on In-the-Wild recordings of public figures. Putting a self-supervised
+encoder in front of the classifier, XLS-R~\cite{babu2022xlsr} being a common choice, closes much of this gap; the Spectra-0
 model~\cite{spectra0} we use combines XLS-R with an ECAPA-TDNN head.
 
 \textit{Audio-visual consistency.} SyncNet~\cite{chung2016syncnet} learns a joint embedding of mouth crops and
@@ -289,8 +290,8 @@ originals so that no model is tested on a copy of a video it was trained on.
 
 \textit{Protocol and metrics.} We report AUC and EER, recall at a fixed false-positive rate (FPR), and latency. Fusion
 models were evaluated with grouped five-fold cross-validation; inside each training fold, a fifth of the groups were held
-out to fit the calibrator. Because the pilot set is small, every fusion result is repeated over five random seeds and
-reported as mean $\pm$ standard deviation.
+out to fit the calibrator. Because the pilot set is small, we ran each fusion experiment five times with
+different seeds and quote the average together with its spread (mean $\pm$ one SD).
 
 % =====================================================================================================
 \section{Results}
@@ -466,16 +467,17 @@ monitoring of this kind requires informed consent from candidates and compliance
 % =====================================================================================================
 \section{Conclusion}
 
-TrustHire combines ten forms of evidence into a calibrated, explained risk timeline for live interviews and runs below
-real time on a laptop CPU. Swapping the face-forgery model for a general AI-image detector and learning the fusion
-weights lifted session-level AUC on our pilot set from \HandOldSessAUC{} to \LearnSessAUC{}. The next steps are a
-larger, multi-participant recording set with real-time face swaps and more scripted sessions, and voice anti-spoofing
-training data that includes genuinely reverberant speech.
+TrustHire turns ten independent cues into one calibrated risk timeline that a reviewer can inspect, and it keeps up
+with a live interview on an ordinary laptop CPU. Two changes mattered most on our recordings: a general AI-image
+detector in place of the FaceForensics++ model, and fusion weights learned from data. Together they moved
+session-level AUC from \HandOldSessAUC{} to \LearnSessAUC{}. Our immediate plans are to record many more
+participants, add live face-swap attacks and further scripted sessions, and retrain the voice anti-spoofing branch
+on speech captured in real, echoing rooms.
 
 \section*{Acknowledgment}
 
 The authors used an AI writing and coding assistant during software development and to help draft parts of this
-manuscript. All experiments were run and checked by the authors, who take full responsibility for the content.
+manuscript. Every experiment was executed and verified by the three of us, and we stand behind all results reported here.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
